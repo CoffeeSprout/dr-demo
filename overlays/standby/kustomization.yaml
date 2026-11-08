@@ -5,7 +5,7 @@ resources:
 # Failover = swap these counts between primary and standby in one commit.
 replicas:
   - name: echo
-    count: 1
+    count: 0
 patches:
   - patch: |-
       apiVersion: apps/v1
