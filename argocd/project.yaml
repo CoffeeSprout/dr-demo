@@ -1,0 +1,30 @@
+# Scope fence: namespace dr-demo on the two clusters, this repository only,
+# and only the three kinds the app needs.
+# Applied by hand on the ArgoCD cluster: kubectl apply -f argocd/project.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: dr-demo
+  namespace: argocd
+spec:
+  description: Two-site warm-standby demo, namespace dr-demo only
+  sourceRepos:
+    - https://github.com/CoffeeSprout/dr-demo.git
+  destinations:
+    - name: saturn-adbn1
+      namespace: dr-demo
+    - name: jupiter-wsdc1
+      namespace: dr-demo
+  # CreateNamespace=true is permission-checked like any other resource, so the
+  # namespace has to be allowed by name. Nothing else cluster-scoped.
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+      name: dr-demo
+  namespaceResourceWhitelist:
+    - group: apps
+      kind: Deployment
+    - group: ""
+      kind: Service
+    - group: networking.k8s.io
+      kind: Ingress

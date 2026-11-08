@@ -1,0 +1,42 @@
+# The same app on both sites; the overlay decides which one is active.
+# Applied by hand on the ArgoCD cluster: kubectl apply -f argocd/applicationset.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: dr-demo-failover
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - list:
+        elements:
+          - cluster: saturn-adbn1
+            overlay: primary
+          - cluster: jupiter-wsdc1
+            overlay: standby
+  template:
+    metadata:
+      name: 'dr-demo-{{.cluster}}'
+    spec:
+      project: dr-demo
+      source:
+        repoURL: https://github.com/CoffeeSprout/dr-demo.git
+        targetRevision: HEAD
+        path: 'overlays/{{.overlay}}'
+      destination:
+        name: '{{.cluster}}'
+        namespace: dr-demo
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=true
+        automated:
+          prune: true
+          selfHeal: true
+        retry:
+          limit: -1
+          refresh: true
+          backoff:
+            duration: 30s
+            factor: 2
+            maxDuration: 5m

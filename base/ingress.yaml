@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: echo
+spec:
+  ingressClassName: haproxy
+  rules:
+    # .example is reserved (RFC 2606): no DNS record exists or is needed.
+    # Test with: curl --resolve dr-demo.example:80:<ingress IP> http://dr-demo.example/
+    - host: dr-demo.example
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: echo
+                port:
+                  name: http
